@@ -1,10 +1,31 @@
 class MoviesController < ApplicationController
   before_action :set_movie, only: %i[ show edit update destroy ]
 
-  # GET /movies or /movies.json
-  def index
-    @movies = Movie.all
+# GET /movies or /movies.json
+
+def index
+  sortable_columns = %w[title rating release_date]
+  directions = %w[asc desc]
+
+  if sortable_columns.include?(params[:sort])
+    @sort = params[:sort]
+  else
+    @sort = session[:movie_sort].presence_in(sortable_columns) || "title"
   end
+
+  if directions.include?(params[:direction])
+    @direction = params[:direction]
+  elsif params[:sort].present?
+    @direction = "asc"
+  else
+    @direction = session[:movie_direction].presence_in(directions) || "asc"
+  end
+
+  session[:movie_sort] = @sort
+  session[:movie_direction] = @direction
+
+  @movies = Movie.order(@sort => @direction)
+end
 
   # GET /movies/1 or /movies/1.json
   def show

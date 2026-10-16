@@ -2,15 +2,61 @@
 
 <% content_for :title, "Movies" %>
 
-<h1>Movies</h1>
-
-<div id="movies">
-  <% @movies.each do |movie| %>
-    <%= render movie %>
-    <p>
-      <%= link_to "Show this movie", movie %>
-    </p>
-  <% end %>
+<div class="page-header">
+  <h1>My Movie Collection</h1>
+  <p class="page-subtitle">
+    Browse, sort, and manage your movies in one place.
+  </p>
 </div>
 
-<%= link_to "New movie", new_movie_path %>
+<table>
+
+
+<thead>
+  <tr>
+    <% [
+      ["Title", "title"],
+      ["Rating", "rating"],
+      ["Release Date", "release_date"]
+    ].each do |label, column| %>
+      <th class="<%= params[:sort] == column && %w[asc desc].include?(params[:direction]) ? "sorted-#{params[:direction]}" : "" %>">
+        <% next_direction = (@sort == column && @direction == "asc") ? "desc" : "asc" %>
+
+        <%= link_to movies_path(
+              sort: column,
+              direction: next_direction
+            ), class: "sort-link" do %>
+          <span><%= label %></span>         
+<span class="sort-icon" aria-hidden="true">
+  <%= params[:sort] == column ? (params[:direction] == "asc" ? "▲" : "▼") : "⇅" %>
+</span>
+          <span class="visually-hidden">
+            <%= @sort == column ? "Currently sorted #{@direction}ending" : "Sort by #{label}" %>
+          </span>
+        <% end %>
+      </th>
+    <% end %>
+  </tr>
+</thead>
+
+
+  <tbody>
+    <% @movies.each do |movie| %>
+      <tr>
+       <td><%= link_to movie.title, movie_path(movie) %></td>
+        <td><%= movie.rating %></td>
+        <td><%= movie.release_date&.strftime("%B %-d, %Y") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+
+  <tfoot>
+    <tr>
+      <td colspan="3">Total movies: <%= @movies.size %></td>
+    </tr>
+  </tfoot>
+</table>
+
+<p class="page-actions">
+  <%= link_to "＋ Add New Movie", new_movie_path, class: "button-link" %>
+</p>
